@@ -81,7 +81,17 @@ class TriaChromosome(Chromosome):
 
 
 class IntChromosome(Chromosome):
-    pass
+
+    def __init__(self, number_of_alles, allel_len, mutate_fun):
+        super().__init__(number_of_alles, allel_len, mutate_fun)
+
+        self.allowed_allels = (0, 1)
+
+    def get_value(self):
+        out = []
+        for bitstream in self.fenotype:
+            out.append([bin_to_dec(bitstream)])
+        return out
 
 
 class LayerChromosome(Chromosome):
