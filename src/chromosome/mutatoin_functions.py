@@ -1,9 +1,7 @@
-import random
-
 from numpy.random import rand, choice
 
 
-def bin_mutatte(chromosome=None, r_mut=0.01):
+def bin_mutate(chromosome=None, r_mut=0.01):
     if type(chromosome) is None:
         raise Exception("[bin_mutation]: Chromosome can't be a NoneType")
 
