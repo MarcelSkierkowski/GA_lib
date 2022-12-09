@@ -12,7 +12,7 @@ def bin_to_dec(binary: list):
     return dec
 
 
-class Chromosome():
+class Chromosome:
 
     def __init__(self, number_of_alles: int, allel_len: int, mutate_fun):
         self.fitness = 0
@@ -27,12 +27,17 @@ class Chromosome():
                                           size=(self.number_of_allels, self.allel_len), dtype=int)
 
     def mutation(self):
+
+        if self.fenotype is None:
+            raise Exception("Fenotype is Nonne")
+
         self.fenotype = self.mutate_fun(chromosome=self.fenotype, r_mut=0.1)
 
     def __str__(self):
-        string_allel = ''
+        string_allel = '[ '
         for allel in self.fenotype:
-            string_allel = string_allel + str(allel) + '\n'
+            string_allel = string_allel + str(allel) + ' '
+        string_allel = string_allel + ']'
         return string_allel
 
 
