@@ -1,6 +1,17 @@
 import numpy as np
 
 
+def bin_to_dec(binary: list):
+    i = 0
+    dec = 0
+    binary = np.fliplr([binary])
+
+    for bit in binary[0]:
+        dec = dec + 2 ** i * bit
+        i += 1
+    return dec
+
+
 class Chromosome():
 
     def __init__(self, number_of_alles: int, allel_len: int, mutate_fun):
@@ -44,7 +55,16 @@ class GrayChromosome(BinChromosome):
 class LogChromosome(BinChromosome):
 
     def __init__(self, number_of_alles, allel_len, mutate_fun):
+        if allel_len < 3:
+            raise Exception("Log Chromosome size must be 3 or greater")
+
         super().__init__(number_of_alles, allel_len, mutate_fun)
+
+    def get_value(self):
+        out = []
+        for bitstream in self.fenotype:
+            out.append([(-1) ** bitstream[0] * np.exp((-1) ** bitstream[1] * bin_to_dec(bitstream[2:]))])
+        return out
 
 
 class TriaChromosome(Chromosome):
