@@ -1,4 +1,6 @@
+import numpy as np
 from numpy.random import rand, randint
+import random
 from cerberus import Validator
 
 from src.chromosome.configuration_schema import schema
@@ -28,6 +30,43 @@ class Chromosome:
         for i in range(len(self._genome)):
             if rand() < self._r_mut:
                 self._genome[i] = 1 - self._genome[i]
+
+    def inversion_mutate(self):
+        if rand() < self._r_mut:
+            start = random.randint(0, self._number_of_genes - 2)
+            stop = random.randint(start + 2, self._number_of_genes)
+            self._genome[start:stop] = np.flip(self._genome[start:stop])
+
+    def swap_mutate(self):
+        if rand() < self._r_mut:
+            start = random.randint(0, self._number_of_genes - 1)
+            stop = start
+            while start == stop:
+                stop = random.randint(0, self._number_of_genes - 1)
+            self._genome[[start, stop]] = self._genome[[stop, start]]
+
+    def insert_mutate(self):
+        if rand() < self._r_mut:
+            start = random.randint(0, self._number_of_genes - 1)
+            stop = start
+            while start == stop:
+                stop = random.randint(0, self._number_of_genes - 1)
+
+            replace = self._genome[start]
+            self._genome = np.delete(self._genome, start)
+            self._genome = np.insert(self._genome, stop, replace)
+
+    def relocate_mutate(self):
+        if rand() < self._r_mut:
+            start_1 = random.randint(0, self._number_of_genes - 2)
+            stop_1 = random.randint(start_1 + 1, self._number_of_genes)
+
+            start_2 = random.randint(0, self._number_of_genes - (stop_1 - start_1) - 1)
+
+            replace = self._genome[start_1:stop_1]
+            self._genome = np.delete(self._genome, range(start_1,stop_1), None)
+            self._genome = np.insert(self._genome, start_2, replace)
+
 
     def set_fitness(self, val):
         self._fitness = val
