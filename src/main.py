@@ -1,11 +1,12 @@
 from src.chromosome.chromosome import Chromosome
+from src.population.population import Population
+from src.population.fitness_function import *
 
 config = {
     "genes_size": [3, 3, 4],
     "genes_range": [(-2, 5), (0, 7), (-3, 12)],
     "mutation_probability": 0.2
 }
-
 
 chromosome = Chromosome(conf=config)
 print("\n\nChromosome jest lista bitow ale w reprezentacji dorysowuje nawiasy w celu latwego zobrazowania "
@@ -19,3 +20,9 @@ print(chromosome.get_phenotype())
 chromosome.set_fitness(0.5)
 print(f"\nFitness: {chromosome.get_fitness()}")
 
+population_one = Population(config, population_size=50, fitness_equation=EQUATION, generation_limit=10)
+i = 0
+while i < population_one.generation_limit:
+    pass
+    i += 1
+# population_one.fitness(EQUATION)
