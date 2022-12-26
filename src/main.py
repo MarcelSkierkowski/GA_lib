@@ -25,5 +25,8 @@ i = 0
 while i < population_one.generation_limit or 0 < population_one.fitness_avg_std < 0.5:
     # Selection
     population_one.selection_roulette_wheel_method()
+    # Crossover
+    population_one.crossover_one_point()
+    # Mutation
 
     i += 1
