@@ -4,7 +4,7 @@ from src.population.fitness_function import *
 
 config = {
     "genes_size": [3, 3, 4],
-    "genes_range": [(-2, 5), (0, 7), (-3, 12)],
+    "genes_range": [(-5, 5), (-5, 7), (0, 12)],
     "mutation_probability": 0.2
 }
 
@@ -20,9 +20,10 @@ print(chromosome.get_phenotype())
 chromosome.set_fitness(0.5)
 print(f"\nFitness: {chromosome.get_fitness()}")
 
-population_one = Population(config, population_size=50, fitness_equation=EQUATION, generation_limit=10)
+population_one = Population(config, population_size=10, fitness_equation=EQUATION, generation_limit=10)
 i = 0
-while i < population_one.generation_limit:
-    pass
+while i < population_one.generation_limit or 0 < population_one.fitness_avg_std < 0.5:
+    # Selection
+    population_one.selection_roulette_wheel_method()
+
     i += 1
-# population_one.fitness(EQUATION)
