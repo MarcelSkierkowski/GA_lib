@@ -20,13 +20,19 @@ print(chromosome.get_phenotype())
 chromosome.set_fitness(0.5)
 print(f"\nFitness: {chromosome.get_fitness()}")
 
-population_one = Population(config, population_size=10, fitness_equation=EQUATION, generation_limit=10)
+population_one = Population(config, population_size=100, fitness_equation=EQUATION, generation_limit=100)
 i = 0
-while i < population_one.generation_limit or 0 < population_one.fitness_avg_std < 0.5:
+while not(i > population_one.generation_limit or 0 < population_one.fitness_avg_std < 0.05):
     # Selection
     population_one.selection_roulette_wheel_method()
     # Crossover
-    population_one.crossover_one_point()
+    population_one.crossover()
     # Mutation
+    population_one.mutate()
+    # Stop condition
+    population_one.set_fitness_avg()
+    population_one.set_fitness_std()
 
+    print(f"Generation {i}: population fitness average standard deviation {population_one.fitness_avg_std:.3f}")
     i += 1
+y = 2
