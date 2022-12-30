@@ -1,32 +1,38 @@
 import re
 import numpy as np
+import math
 from src.chromosome.chromosome import Chromosome
 from itertools import permutations
 
 
 class Population:
-    def __init__(self, config: dict, population_size: int, fitness_equation: str = "", generation_limit: int = 5):
+    def __init__(self, config: dict, population_size: int, fitness_func, generation_limit: int = 5):
         '''
 
         Args:
             config: chromosome configuration
             population_size: -
-            fitness_equation: equation imported from fitness_function.py files
+            fitness_func: function imported from fitness_function.py files
             generation_limit: number of generations (finish condition)
         '''
         self.population_size = population_size
         self.generation_limit = generation_limit
+        self.fitness_func = fitness_func
 
-        self.fitness_avg_std = 0  # finish condition
+        self.fitness_avg_std = -1  # finish condition
         self.fitness_avg = []  # list of population average fitness in each generation
 
         # Initialization of population
         self.population = [Chromosome(conf=config) for _ in range(self.population_size)]
         # Setting fitness initialization population
+        self.update_fitness()
+
+        self.append_fitness_avg()
+
+    def update_fitness(self):
         for chromosome in self.population:
-            fitness_val = self._fitness(fitness_equation, chromosome.get_phenotype())
+            fitness_val = self.fitness_func(*chromosome.get_phenotype())
             chromosome.set_fitness(fitness_val)
-        self.set_fitness_avg()
 
     @staticmethod
     def _fitness(equation, phenotype):
@@ -38,10 +44,17 @@ class Population:
         result = eval(equ)
         return result
 
+    def get_best_chromosome(self):
+        index = 0
+        for idx, chromosome in enumerate(self.population):
+            if chromosome.get_fitness() > self.population[index].get_fitness():
+                index = idx
+        return self.population[index]
+
     def get_fitness_sum(self):
         return sum(map(lambda x: float(x.get_fitness()), self.population))
 
-    def set_fitness_avg(self):
+    def append_fitness_avg(self):
         self.fitness_avg.append(self.get_fitness_sum() / self.population_size)
 
     def set_fitness_std(self):
@@ -94,3 +107,4 @@ class Population:
                 chromosome.relocate_mutate()
             else:
                 pass
+        self.update_fitness()
