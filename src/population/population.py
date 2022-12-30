@@ -5,9 +5,11 @@ from itertools import permutations
 
 
 class Population:
-    def __init__(self, config: dict, population_size: int, fitness_equation: str = "", generation_limit: int = 5):
+    def __init__(self, config: dict, population_size: int, fitness_equation, generation_limit: int = 5):
         self.population_size = population_size
         self.generation_limit = generation_limit
+
+        self._fitness_fun = fitness_equation
 
         self.fitness_avg_std = 0  # finish condition
         self.fitness_avg = []  # list of population average fitness in each generation
@@ -17,7 +19,7 @@ class Population:
         # Setting fitness initialization population
         fitness_sum = 0
         for chromosome in self.population:
-            fitness_val = self._fitness(fitness_equation, chromosome.get_phenotype())
+            fitness_val = self._fitness_fun(*chromosome.get_phenotype())
             fitness_sum += fitness_val
             chromosome.set_fitness(fitness_val)
         self.set_fitness_avg()
@@ -53,7 +55,7 @@ class Population:
                                                p=probabilities)
         self.population = selected_population
 
-    def crossover_one_point(self, cross_probability: int = 0.7):
+    def crossover_one_point(self, cross_probability: float = 0.7):
         possible_permutations = permutations(range(self.population_size), 2)
         possible_permutations = list(set([tuple(sorted(x)) for x in list(possible_permutations)]))
         rng = np.random.default_rng()

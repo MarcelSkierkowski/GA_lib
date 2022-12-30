@@ -3,8 +3,8 @@ from src.population.population import Population
 from src.population.fitness_function import *
 
 config = {
-    "genes_size": [3, 3, 4],
-    "genes_range": [(-5, 5), (-5, 7), (0, 12)],
+    "genes_size": [3, 3],
+    "genes_range": [(-5, 5), (-5, 7)],
     "mutation_probability": 0.2
 }
 
@@ -20,13 +20,15 @@ print(chromosome.get_phenotype())
 chromosome.set_fitness(0.5)
 print(f"\nFitness: {chromosome.get_fitness()}")
 
-population_one = Population(config, population_size=10, fitness_equation=EQUATION, generation_limit=10)
+population_one = Population(config, population_size=10, fitness_equation=f_shaffer, generation_limit=10)
+print("\n\nFFFF\n\n")
 i = 0
 while i < population_one.generation_limit or 0 < population_one.fitness_avg_std < 0.5:
     # Selection
     population_one.selection_roulette_wheel_method()
     # Crossover
     population_one.crossover_one_point()
+    print(population_one.population[2].get_fitness())
     # Mutation
 
     i += 1
