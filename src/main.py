@@ -23,7 +23,10 @@ def main():
         avg.append(population.get_fitness_sum() / population.population_size)
 
         # Selection
-        population.selection_roulette_wheel_method()
+        # population.selection_roulette_wheel_method()
+        # population.selection_rank_method()
+        # population.selection_tournament_ranking_method()
+        population.selection_threshold_method()
         # Crossover
         population.crossover(cross_probability=0.8, cross_points_num=2)
         # Mutation

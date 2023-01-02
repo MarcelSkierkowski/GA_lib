@@ -65,6 +65,33 @@ class Population:
 
         self.population = selected_population
 
+    def selection_rank_method(self):
+        sorted_population = sorted(self.population, key=lambda x: x.get_fitness(), reverse=True)
+        # biore polowe osobnikow tych lepszych z posortowania i potem losowo wybieram z nich cala kolejna populacje
+        selected_population = np.random.choice(sorted_population[:len(self.population) // 2], size=self.population_size)
+
+        self.population = selected_population
+
+    def selection_tournament_ranking_method(self):
+        players = self.population.copy()
+        winners = []
+        # kazdy z kazdym walczy, przechodzi ten lepszy
+        for _ in range(self.population_size // 2):
+            pair = np.random.choice(players, size=2)
+            winners.append(max(pair, key=lambda x: x.get_fitness()))
+            players = list(filter(lambda x: x not in pair, players))
+        self.population = np.random.choice(winners, size=self.population_size)
+
+    def selection_threshold_method(self):
+        threshold = self.population_size - self.population_size // 3
+        over_rank = []
+        # przechodza osobniki o randze wyzszej niz threshold (np. >= 2/3 * 60)
+        sorted_population = sorted(self.population, key=lambda x: x.get_fitness(), reverse=False)
+        for rank, value in enumerate(sorted_population):
+            if rank >= threshold:
+                over_rank.append(value)
+        self.population = np.random.choice(over_rank, size=self.population_size)
+
     def crossover(self, cross_probability: float = 0.7, cross_points_num: int = 1):
         possible_permutations = permutations(range(self.population_size), 2)
         possible_permutations = list(set([tuple(sorted(x)) for x in list(possible_permutations)]))
