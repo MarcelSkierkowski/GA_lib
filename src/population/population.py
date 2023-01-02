@@ -1,48 +1,41 @@
-import re
 import numpy as np
-import math
 from src.chromosome.chromosome import Chromosome
-from itertools import permutations
+from itertools import permutations, combinations
 
 
 class Population:
-    def __init__(self, config: dict, population_size: int, fitness_func, generation_limit: int = 5):
-        '''
+    def __init__(self, config: dict, population_size: int, fitness_func):
+        """
 
         Args:
             config: chromosome configuration
             population_size: -
             fitness_func: function imported from fitness_function.py files
-            generation_limit: number of generations (finish condition)
-        '''
+        """
         self.population_size = population_size
-        self.generation_limit = generation_limit
         self.fitness_func = fitness_func
 
         self.fitness_avg_std = -1  # finish condition
         self.fitness_avg = []  # list of population average fitness in each generation
 
         # Initialization of population
+        self.chr_config = config
         self.population = [Chromosome(conf=config) for _ in range(self.population_size)]
         # Setting fitness initialization population
         self.update_fitness()
+        self.global_best_chrom = self.get_best_chromosome()
 
         self.append_fitness_avg()
+
+    def find_best(self):
+        candidate = self.get_best_chromosome()
+        if candidate.get_fitness() > self.global_best_chrom.get_fitness():
+            self.global_best_chrom = candidate
 
     def update_fitness(self):
         for chromosome in self.population:
             fitness_val = self.fitness_func(*chromosome.get_phenotype())
             chromosome.set_fitness(fitness_val)
-
-    @staticmethod
-    def _fitness(equation, phenotype):
-        parameters = re.search(r"\(\s*([^)]+?)\s*\)", equation).group(1).replace(" ", "").split(',')
-        equ = re.findall(r"=\s*(.+)", equation)[0]
-
-        for param, var in zip(parameters, phenotype):
-            exec(f'{param} = {var}')
-        result = eval(equ)
-        return result
 
     def get_best_chromosome(self):
         index = 0
@@ -63,38 +56,50 @@ class Population:
 
     def selection_roulette_wheel_method(self):
         probabilities = []
+        fitness_sum = self.get_fitness_sum()
 
         for chromosome in self.population:
-            probabilities.append(
-                chromosome.get_fitness() / self.get_fitness_sum())  # list of chromosomes probabilities
-        selected_population = np.random.choice(self.population, size=self.population_size,
-                                               p=probabilities)
+            probabilities.append(chromosome.get_fitness() / fitness_sum)
+
+        selected_population = np.random.choice(self.population, size=self.population_size, p=probabilities)
+
         self.population = selected_population
 
     def crossover(self, cross_probability: float = 0.7, cross_points_num: int = 1):
         possible_permutations = permutations(range(self.population_size), 2)
         possible_permutations = list(set([tuple(sorted(x)) for x in list(possible_permutations)]))
         rng = np.random.default_rng()
-        # cross_chromosomes - lista tupli z chromosomami, ktore sa krzyzowane [(1,4), (1,7), (2,3)] moga sie powtarzac chromosomy
-        cross_chromosomes = rng.choice(possible_permutations, int(cross_probability * self.population_size),
+        cross_chromosomes = rng.choice(possible_permutations, self.population_size,
                                        replace=False)
+
+        new_population = []
         for chrom_a, chrom_b in cross_chromosomes:
             a = self.population[chrom_a].get_genome()
             b = self.population[chrom_b].get_genome()
-            cross_points = np.random.randint(len(a), size=cross_points_num)
+            new_population.append(self._n_points_cross(cross_points_num=cross_points_num, genome_a=a, genome_b=b))
 
-            for i in cross_points:
-                a_new = np.concatenate([a[:i], b[i:]])
-                b_new = np.concatenate([b[:i], a[i:]])
-                a = a_new
-                b = b_new
+        self.population = new_population
 
-            self.population[chrom_a].set_genome(a)
-            self.population[chrom_b].set_genome(b)
+    def _n_points_cross(self, cross_points_num: int, genome_a, genome_b) -> Chromosome:
+        if cross_points_num < 1:
+            raise Exception("[CROSSOVER]: cross_point_num must be positive integer")
 
-    def mutate(self, mutation_probability: float = 0.1, mutation_type: str = "binary"):
-        selected_chromosomes = np.random.choice(self.population, size=int(mutation_probability * self.population_size))
-        for chromosome in selected_chromosomes:
+        cross_points = np.random.randint(len(genome_a), size=cross_points_num)
+
+        genome_a_new = []
+        for idx in cross_points:
+            genome_a_new = np.concatenate([genome_a[:idx], genome_b[idx:]])
+            genome_b_new = np.concatenate([genome_b[:idx], genome_a[idx:]])
+            genome_a = genome_a_new
+            genome_b = genome_b_new
+
+        child = Chromosome(conf=self.chr_config)
+        child.set_genome(genome_a_new)
+
+        return child
+
+    def mutate(self, mutation_type: str = "binary"):
+        for chromosome in self.population:
             if mutation_type == "binary":
                 chromosome.binary_mutate()
             elif mutation_type == "inversion":
@@ -107,4 +112,3 @@ class Population:
                 chromosome.relocate_mutate()
             else:
                 pass
-        self.update_fitness()

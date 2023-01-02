@@ -1,49 +1,56 @@
-from src.chromosome.chromosome import Chromosome
+import matplotlib.pyplot as plt
+
+from src.plotter.plotter import plot_contour, plotter_3d
 from src.population.population import Population
-from src.population.logger import Logger
 from src.population.fitness_function import *
 
-config = {
-    "genes_size": [24, 24],
-    "genes_range": [(-100, 100), (-100, 100)],
-    "mutation_probability": 0.2
-}
+EPOCHS = 200
+OPT_FUNCTION = f_multimodal
 
-
-# chromosome = Chromosome(conf=config)
-# print("\n\nChromosome jest lista bitow ale w reprezentacji dorysowuje nawiasy w celu latwego zobrazowania "
-#       "poszczegolnych genow\n")
-# print(f"Chromosome: {chromosome}")
-# chromosome.binary_mutate()
-# print(f"Chromosome after mutation {chromosome}")
-# print("\nWartosci po przeskalowaniu")
-# print(chromosome.get_phenotype())
-#
-# chromosome.set_fitness(0.5)
-# print(f"\nFitness: {chromosome.get_fitness()}")
 
 def main():
-    population_one = Population(config, population_size=60, fitness_func=f_equ, generation_limit=50)
-    logs = Logger(config, fitness_func=f_equ)
-    i = 0
-    while not (i > population_one.generation_limit or -1 < population_one.fitness_avg_std < 0.0001):
+    avg = []
+
+    config = {
+        "genes_size": [35, 35],
+        "genes_range": [(0, 10), (0, 10)],
+        "mutation_probability": 0.01
+    }
+
+    population = Population(config, population_size=60, fitness_func=OPT_FUNCTION)
+
+    for _ in range(EPOCHS):
+        avg.append(population.get_fitness_sum() / population.population_size)
+
         # Selection
-        population_one.selection_roulette_wheel_method()
+        population.selection_roulette_wheel_method()
         # Crossover
-        population_one.crossover(cross_probability=0.8, cross_points_num=2)
+        population.crossover(cross_probability=0.8, cross_points_num=2)
         # Mutation
-        population_one.mutate(mutation_probability=0.01)
+        population.mutate()
+
+        population.update_fitness()
+
+        population.find_best()
+
         # Stop condition
-        population_one.append_fitness_avg()
-        population_one.set_fitness_std()
+        population.append_fitness_avg()
+        population.set_fitness_std()
+        population.fitness_avg_std = -1  # na razie wylaczylem ten warunek
 
-        print(f"Generation {i}: population fitness average standard deviation {population_one.fitness_avg_std:.3f}")
-        logs.save(population_one.get_best_chromosome())
+    plt.plot(avg)
+    plt.show()
 
-        population_one.fitness_avg_std = -1 # na razie wylaczylem ten warunek
-        i += 1
+    x = []
+    y = []
 
-    logs.plot(num_of_generation=i)
+    for chrom in population.population:
+        x.append(chrom.get_phenotype()[0])
+        y.append(chrom.get_phenotype()[1])
+
+    print(population.global_best_chrom.get_phenotype())
+    plotter_3d(OPT_FUNCTION, (0, 10, 0.01), (0, 10, 0.01), (0, 15))
+    plot_contour(OPT_FUNCTION, config["genes_range"][0], config["genes_range"][1], x, y)
 
 
 if __name__ == '__main__':
