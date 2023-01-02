@@ -29,7 +29,7 @@ def plot_contour(function_3d, x_range, y_range, points_x, points_y):
 
     Z = function_3d(X, Y)
 
-    plt.contour(X, Y, Z)
+    plt.contour(X, Y, Z, 20)
     plt.plot(points_x, points_y, 'ro')
     plt.show()
 

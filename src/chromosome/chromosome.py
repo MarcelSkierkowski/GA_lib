@@ -64,12 +64,17 @@ class Chromosome:
             start_2 = random.randint(0, self._number_of_genes - (stop_1 - start_1) - 1)
 
             replace = self._genome[start_1:stop_1]
-            self._genome = np.delete(self._genome, range(start_1,stop_1), None)
+            self._genome = np.delete(self._genome, range(start_1, stop_1), None)
             self._genome = np.insert(self._genome, start_2, replace)
-
 
     def set_fitness(self, val):
         self._fitness = val
+
+    def set_genome(self, val):
+        self._genome = val
+
+    def get_genome(self):
+        return self._genome
 
     def get_fitness(self):
         return self._fitness
